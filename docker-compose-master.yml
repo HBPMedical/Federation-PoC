@@ -38,7 +38,7 @@ networks:
 
 services:
   exareme-manager:
-    image:  hbpmip/mipexareme
+    image:  hbpmip/exareme
     environment:
       - CONSULURL=${consul_url}
       - MASTER_FLAG=master

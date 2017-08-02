@@ -39,7 +39,7 @@ networks:
 services:
 
   exareme:
-    image:  hbpmip/mipexareme
+    image:  hbpmip/exareme
     environment:
       - CONSULURL=${consul_url}
       - RAWUSERNAME=federation
