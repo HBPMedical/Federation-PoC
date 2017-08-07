@@ -62,4 +62,10 @@ then
 		-H unix:///var/run/docker.sock
 fi
 
-docker network create -d overlay --attachable mip_net-federation
+docker network create \
+	--driver=overlay \
+	--attachable \
+	--subnet=10.20.30.0/24 \
+	--ip-range=10.20.30.0/24 \
+	--gateway=10.20.30.254 \
+	mip_net-federation
