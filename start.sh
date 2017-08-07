@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #                    Copyright (c) 2016-2017
 #   Data Intensive Applications and Systems Labaratory (DIAS)
 #            Ecole Polytechnique Federale de Lausanne
