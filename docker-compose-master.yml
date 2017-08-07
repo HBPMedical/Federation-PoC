@@ -51,6 +51,9 @@ services:
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
       - MODE=global
+    depends_on:
+      - raw-engine
+      - exareme-keystore
     deploy:
       restart_policy:
         condition: on-failure
@@ -93,6 +96,8 @@ services:
     image: "hbpmip/postgresraw-ui:v0.3"
     networks:
       - "net-local"      # Connect the docker container to the local network
+    depends_on:
+      - raw-engine
     deploy:
       restart_policy:
         condition: on-failure
