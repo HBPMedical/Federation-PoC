@@ -64,7 +64,7 @@ fi
 
 docker network create \
 	--driver=overlay \
-	--opt encrpyted \
+	--opt encrypted \
 	--attachable \
 	--subnet=10.20.30.0/24 \
 	--ip-range=10.20.30.0/24 \
