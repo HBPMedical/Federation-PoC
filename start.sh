@@ -57,7 +57,7 @@ case $1 in
 	uoa)
 		federation_node="uoa"
 		exareme_master="master"
-		exareme_workers_wait="1"
+		exareme_workers_wait="2"
 		role=master
 	;;
 
