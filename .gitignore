@@ -1,3 +1,4 @@
+.DS_Store
 ._*
 consul_url.conf
 swarm_manager.conf
