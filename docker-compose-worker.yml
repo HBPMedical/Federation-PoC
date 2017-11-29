@@ -51,7 +51,6 @@ services:
       - RAWDATAKEY=output #query used with output, query-start with data
       - MODE=global
     depends_on:
-      - raw-engine
     deploy:
       restart_policy:
         condition: on-failure
@@ -66,49 +65,3 @@ services:
       - "net-federation" # Connect the docker container to the global network
       - "net-local"      # Connect the docker container to the local network
 
-  raw-engine:
-    image: "hbpmip/postgresraw:v1.0"
-    networks:
-      - "net-local"      # Connect the docker container to the local network
-    volumes:
-      - "${raw_data_root}:/datasets:ro"
-      - "${pg_data_root}:/data:rw"
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == ${federation_node}
-    environment:
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-
-  raw-ui:
-    image: "hbpmip/postgresraw-ui:v1.0"
-    networks:
-      - "net-local"      # Connect the docker container to the local network
-    depends_on:
-      - raw-engine
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == ${federation_node}
-    volumes:
-      - "${raw_data_root}:/datasets:ro"
-      - "${pg_data_root}:/data:rw"
-    environment:
-      - POSTGRES_HOST=raw-engine
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
