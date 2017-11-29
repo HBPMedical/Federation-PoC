@@ -18,8 +18,8 @@
 # USE OF THIS SOFTWARE.
 
 # Node-specific config:
-: ${pg_data_root:="/var/Federation-PoC-data/data"}
-: ${raw_data_root:="/var/Federation-PoC-data/datasets"}
+: ${pg_data_root:="/var/Federation-PoC-1-data/data"}
+: ${raw_data_root:="/var/Federation-PoC-1-data/datasets"}
 : ${federation_node:="UNKNOWN"} # Invalid default value, this needs to be setup.
 export pg_data_root raw_data_root federation_node
 
@@ -28,7 +28,7 @@ export pg_data_root raw_data_root federation_node
 : ${POSTGRES_USER:=mip}
 : ${POSTGRES_PASSWORD:=s3cret}
 : ${POSTGRES_PORT:=5432}
-: ${POSTGRES_DB:=mip}
+: ${POSTGRES_DB:=ldsm}
 export consul_url POSTGRES_USER POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB
 
 usage() {

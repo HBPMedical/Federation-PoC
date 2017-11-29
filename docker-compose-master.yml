@@ -71,7 +71,7 @@ services:
       - "net-local"      # Connect the docker container to the local network
 
   raw-engine:
-    image: "hbpmip/postgresraw"
+    image: "hbpmip/postgresraw:v1.0"
     networks:
       - "net-local"      # Connect the docker container to the local network
     volumes:
@@ -93,7 +93,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
 
   raw-ui:
-    image: "hbpmip/postgresraw-ui:v0.3"
+    image: "hbpmip/postgresraw-ui:v1.0"
     networks:
       - "net-local"      # Connect the docker container to the local network
     depends_on:
