@@ -53,6 +53,16 @@ if [ $# -lt 1 ]; then
 	exit 1
 fi
 
+for h in $(docker node ls --format '{{ .Hostname }}')
+do
+	l=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+	if [ "x$l" == "x$1" ];
+	then
+		rawhost=$(docker node inspect --format '{{.Status.Addr}}' $h)
+		break;
+	fi
+done
+
 case $1 in
 	uoa)
 		federation_node="uoa"
@@ -83,7 +93,7 @@ if [ ${federation_node} == "UNKNOWN" ]; then
 	exit 3
 fi
 
-export federation_node exareme_master exareme_workers_wait
+export federation_node rawhost exareme_master exareme_workers_wait
 shift # drop the node name from the argument list
 
 # Finally deploy the stack

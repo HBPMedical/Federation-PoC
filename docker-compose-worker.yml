@@ -44,13 +44,12 @@ services:
       - CONSULURL=${consul_url}
       - RAWUSERNAME=federation
       - RAWPASSWORD=federation
-      - RAWHOST=raw-ui
-      - RAWPORT=5555
+      - RAWHOST=${rawhost}
+      - RAWPORT=31555
       - RAWENDPOINT=query
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
       - MODE=global
-    depends_on:
     deploy:
       restart_policy:
         condition: on-failure
@@ -63,5 +62,4 @@ services:
           - node.labels.name == ${federation_node}
     networks:
       - "net-federation" # Connect the docker container to the global network
-      - "net-local"      # Connect the docker container to the local network
 
