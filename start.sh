@@ -33,9 +33,10 @@ export consul_url POSTGRES_USER POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB
 
 usage() {
 cat <<EOT
-usage: $0 [-h|--help] (uoa|epfl|chuv)
+usage: $0 [-h|--help] (manager|worker) nodename
 	-h, --help: show this message and exit
-	(uoa|epfl|chuv): the node on which to deploy the stack
+	(manager|worker): the role of the node on which to deploy the stack
+	nodename: the node on which to deploy the stack
 
 The following environment variables can be set to override defaults:
  - pg_data_root		Folder containing the PostgreSQL data
@@ -48,7 +49,7 @@ Errors: This script will exit with the following error codes:
 EOT
 }
 
-if [ $# -lt 1 ]; then
+if [ $# -lt 2 ]; then
 	usage
 	exit 1
 fi
@@ -56,7 +57,7 @@ fi
 for h in $(docker node ls --format '{{ .Hostname }}')
 do
 	l=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-	if [ "x$l" == "x$1" ];
+	if [ "x$l" == "x$2" ];
 	then
 		rawhost=$(docker node inspect --format '{{.Status.Addr}}' $h)
 		break;
@@ -64,15 +65,15 @@ do
 done
 
 case $1 in
-	uoa)
-		federation_node="uoa"
+	manager)
+		federation_node="$2"
 		exareme_master="master"
 		exareme_workers_wait="2"
 		role=master
 	;;
 
-	epfl|chuv)
-		federation_node=$1
+	worker)
+		federation_node="$2"
 		role=worker
 	;;
 
@@ -81,12 +82,7 @@ case $1 in
 		exit 0
 	;;
 
-	*)
-		usage
-		exit 2
-	;;
 esac
-
 if [ ${federation_node} == "UNKNOWN" ]; then
 	echo "Invalid federation node name"
 	usage
@@ -94,6 +90,7 @@ if [ ${federation_node} == "UNKNOWN" ]; then
 fi
 
 export federation_node rawhost exareme_master exareme_workers_wait
+shift # drop the node role from the argument list
 shift # drop the node name from the argument list
 
 # Finally deploy the stack

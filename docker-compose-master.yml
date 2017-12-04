@@ -37,16 +37,17 @@ networks:
     internal: true
 
 services:
+
   exareme-manager:
-    image:  hbpmip/exareme
+    image: hbpmip/exareme
     environment:
       - CONSULURL=${consul_url}
       - MASTER_FLAG=master
       - EXA_WORKERS_WAIT=${exareme_workers_wait} # Wait for N workers
       - RAWUSERNAME=federation
       - RAWPASSWORD=federation
-      - RAWHOST=raw-ui
-      - RAWPORT=5555
+      - RAWHOST=${rawhost}
+      - RAWPORT=31555
       - RAWENDPOINT=query
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
@@ -67,4 +68,4 @@ services:
       - "9090:9090"      # So that we can access the Exareme REST API / interface
     networks:
       - "net-federation" # Connect the docker container to the global network
-      - "net-local"      # Connect the docker container to the local network
+
