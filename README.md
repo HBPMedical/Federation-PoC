@@ -90,8 +90,7 @@ The following are required on all nodes. This is installed by default as part of
 4. Deploy the Federation service
 
    ```sh
-   $ sudo ./start.sh <Role> <Alias>
+   $ sudo ./start.sh <Alias>
    ```
 
-   * `<Role>` is either `manager` or `worker`.
    * `<Alias>` will be used when bringing up the services and should be a short descriptive name.

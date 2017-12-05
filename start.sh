@@ -21,7 +21,7 @@
 : ${pg_data_root:="/var/Federation-PoC-1-data/data"}
 : ${raw_data_root:="/var/Federation-PoC-1-data/datasets"}
 : ${federation_node:="UNKNOWN"} # Invalid default value, this needs to be setup.
-export pg_data_root raw_data_root federation_node
+export pg_data_root raw_data_root
 
 # Whole Swarm config
 : ${consul_url:="exareme-keystore:8500"}
@@ -33,9 +33,8 @@ export consul_url POSTGRES_USER POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB
 
 usage() {
 cat <<EOT
-usage: $0 [-h|--help] (manager|worker) nodename
+usage: $0 [-h|--help] nodename
 	-h, --help: show this message and exit
-	(manager|worker): the role of the node on which to deploy the stack
 	nodename: the node on which to deploy the stack
 
 The following environment variables can be set to override defaults:
@@ -49,48 +48,41 @@ Errors: This script will exit with the following error codes:
 EOT
 }
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
 	usage
 	exit 1
 fi
 
-for h in $(docker node ls --format '{{ .Hostname }}')
-do
-	l=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-	if [ "x$l" == "x$2" ];
-	then
-		rawhost=$(docker node inspect --format '{{.Status.Addr}}' $h)
-		break;
-	fi
-done
-
 case $1 in
-	manager)
-		federation_node="$2"
-		exareme_master="master"
-		exareme_workers_wait="2"
-		role=master
-	;;
-
-	worker)
-		federation_node="$2"
-		role=worker
-	;;
-
-	-h|--help|*)
+	-h|--help)
 		usage
 		exit 0
 	;;
 
+	*)
+		federation_node="$1"
+	;;
 esac
+
 if [ ${federation_node} == "UNKNOWN" ]; then
 	echo "Invalid federation node name"
 	usage
 	exit 3
 fi
 
-export federation_node rawhost exareme_master exareme_workers_wait
-shift # drop the node role from the argument list
+exareme_workers_wait="1"
+for h in $(docker node ls --format '{{ .Hostname }}')
+do
+	l=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+	if [ "x$l" == "x$federation_node" ];
+	then
+		rawhost=$(docker node inspect --format '{{ .Status.Addr }}' $h)
+		role=$(docker node inspect --format '{{ .Spec.Role }}' $h)
+		break;
+	fi
+done
+
+export federation_node rawhost exareme_workers_wait
 shift # drop the node name from the argument list
 
 # Finally deploy the stack
