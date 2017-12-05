@@ -52,19 +52,6 @@ then
 		-H unix:///var/run/docker.sock
 fi
 
-# Keystore
-if true
-then
-(
-	docker run --restart=unless-stopped -d --name swarm-keystore -p ${CONSULPORT}:8500 progrium/consul -server -bootstrap
-	echo "${MASTERIP}:${CONSULPORT}" > consul_url.conf
-
-	# Check Keystore is responding
-	sleep 1
-	curl $(cat consul_url.conf)/v1/catalog/nodes
-)
-fi
-
 docker network create \
 	--driver=overlay \
 	--opt encrypted \

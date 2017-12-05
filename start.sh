@@ -24,7 +24,7 @@
 export pg_data_root raw_data_root federation_node
 
 # Whole Swarm config
-: ${consul_url:="$(cat consul_url.conf)"}
+: ${consul_url:="exareme-keystore:8500"}
 : ${POSTGRES_USER:=mip}
 : ${POSTGRES_PASSWORD:=s3cret}
 : ${POSTGRES_PORT:=5432}

@@ -32,11 +32,25 @@ networks:
     external:
       name: mip_net-federation
 
-  net-local:
-    driver: overlay
-    internal: true
-
 services:
+
+  exareme-keystore:
+    image: progrium/consul
+    command:
+      - -server
+      - -bootstrap
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.role == manager       # Ensures we only start on manager nodes
+          - node.labels.name == ${federation_node}
+    networks:
+      - "net-federation" # Connect the docker container to the global network
 
   exareme-manager:
     image: hbpmip/exareme
@@ -68,4 +82,3 @@ services:
       - "9090:9090"      # So that we can access the Exareme REST API / interface
     networks:
       - "net-federation" # Connect the docker container to the global network
-
