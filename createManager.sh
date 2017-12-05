@@ -27,21 +27,19 @@ set -e
 
 # Master node/Manager
 (
-	echo "${MASTERIP}" > swarm_manager.conf
-
 	# Initialize swarm
 	docker swarm init --advertise-addr=${MASTERIP}
-
-	# get join token
-	SWARM_TOKEN=$(docker swarm join-token -q worker)
-	echo "${SWARM_TOKEN}" > swarm_token.conf
 )
 
 # Portainer, a webUI for Docker Swarm
 if true
 then
+(
 	portainer_data=/srv/portainer
-	test -d ${portainer_data} || mkdir -p ${portainer_data} || ( echo Failed to create ${portainer_data}; exit 1)
+	test -d ${portainer_data} \
+		|| mkdir -p ${portainer_data} \
+		|| ( echo Failed to create ${portainer_data}; exit 1 )
+
 	docker service create \
 		--name portainer \
 		--publish ${PORTAINERPORT}:9000 \
@@ -50,6 +48,7 @@ then
 		--mount type=bind,src=${portainer_data},dst=/data \
 		portainer/portainer \
 		-H unix:///var/run/docker.sock
+)
 fi
 
 docker network create \
