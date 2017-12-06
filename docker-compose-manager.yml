@@ -17,15 +17,6 @@
 # USE OF THIS SOFTWARE.
 
 version: '3'
-# the following environment variables are expected to be available when running
-# docker-compose up
-# - raw_data_root:      The folder containing the data files (CSV, json,...) on the
-#                       swarm node host. Mapped to /datasets WITHIN the containers
-# - pg_data_root:       The folder containing the PostgreSQL binary tables on the
-#                       swarm node host. Mapped to /data WITHIN the containers
-# - raw_admin_conf:     Nginx configuration file
-# - raw_admin_htpasswd: .htpasswd configuration file
-# - raw_admin_log:      Nginx directory for the logs
 
 networks:
   net-federation:

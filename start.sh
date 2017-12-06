@@ -18,10 +18,7 @@
 # USE OF THIS SOFTWARE.
 
 # Node-specific config:
-: ${pg_data_root:="/var/Federation-PoC-1-data/data"}
-: ${raw_data_root:="/var/Federation-PoC-1-data/datasets"}
 : ${federation_node:="UNKNOWN"} # Invalid default value, this needs to be setup.
-export pg_data_root raw_data_root
 
 # Whole Swarm config
 : ${consul_url:="exareme-keystore:8500"}
@@ -38,9 +35,12 @@ usage: $0 [-h|--help] nodename
 	nodename: the node on which to deploy the stack
 
 The following environment variables can be set to override defaults:
- - pg_data_root		Folder containing the PostgreSQL data
- - raw_data_root	Folder containing the raw data
- - raw_admin_root	Folder containing the administration configuration
+ - consul_url: URL to contact consul server for Exareme
+ - exareme_workers_wait: Number of active workers in the federation
+ - POSTGRES_USER
+ - POSTGRES_PASSWORD
+ - POSTGRES_PORT
+ - POSTGRES_DB
 
 Errors: This script will exit with the following error codes:
  1	No arguments provided
