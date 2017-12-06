@@ -12,43 +12,43 @@ In the following we are going to use only one master node. More can be added for
 
 The following are required on all nodes. This is installed by default as part of the MIP.
 
-1. Install docker
+1. Update certificates, and add the docker repository key to the local key ring.
 
    ```sh
    $ sudo apt-get update
    $ sudo apt-get install \
-	    apt-transport-https \
-	    ca-certificates \
-	    curl \
-	    software-properties-common
-	$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+       apt-transport-https \
+       ca-certificates \
+       curl \
+       software-properties-common
+   $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
    ```
 
 2. Check the finger print: `9DC8 5822 9FC7 DD38 854A E2D8 8D81 803C 0EBF CD88`
 
    ```sh
-	$ sudo apt-key fingerprint 0EBFCD88
-	pub   4096R/0EBFCD88 2017-02-22
-      Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
-	uid                  Docker Release (CE deb) <docker@docker.com>
-	sub   4096R/F273FCD8 2017-02-22
+   $ sudo apt-key fingerprint 0EBFCD88
+   pub   4096R/0EBFCD88 2017-02-22
+         Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
+   uid                  Docker Release (CE deb) <docker@docker.com>
+   sub   4096R/F273FCD8 2017-02-22
    ```
 
 3. Add the Docker official repository
 
-  ```sh
-  $ sudo add-apt-repository \
-	   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-	   $(lsb_release -cs) \
-	   stable"
-  ```
+   ```sh
+   $ sudo add-apt-repository \
+      "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+      $(lsb_release -cs) \
+      stable"
+   ```
 
 4. Update the index and install docker:
 
-  ```sh
-  $ sudo apt-get update
-  $ sudo apt-get install docker-ce
-  ```
+   ```sh
+   $ sudo apt-get update
+   $ sudo apt-get install docker-ce
+   ```
 
 ### Deploy the Federation
 1. Create the master nodes
