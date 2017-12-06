@@ -89,9 +89,9 @@ This document does not cover the deployment of MIP Local at the Federation nodes
 
 In summary, the initial setup expected is the following:
 
-- On the Federation Manager server, Docker engine must be installed and the LDSM deployed, either alone or as part of the MIP Local (PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively).
+- On the Federation Manager server, Docker engine must be installed and the LDSM deployed, either alone or as part of the MIP Local (PostgresRAW and PostgresRAW-UI containers configured to expose their services on the port 31432 and 31555 respectively).
 
-- On the other Federation nodes, MIP Local must be deployed including the LDSM, again with PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively.
+- On the other Federation nodes, MIP Local must be deployed including the LDSM, again with PostgresRAW and PostgresRAW-UI containers configured to expose their services on the port 31432 and 31555 respectively.
 
 - The network access is configured at each node according to the requirements.
 
@@ -116,9 +116,9 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 - Create the swarm by running the createMaster.sh script.
   
    ```
-   git clone https://github.com/HBPMedical/Federation-PoC.git
-   cd Federation-PoC
-   ./createMaster.sh
+   $ git clone https://github.com/HBPMedical/Federation-PoC.git
+   $ cd Federation-PoC
+   $ ./createMaster.sh
    ```
 
 ![Image](Federation_schema.003.jpg)
