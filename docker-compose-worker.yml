@@ -21,14 +21,9 @@ version: '3'
 networks:
   net-federation:
     external:
-      name: mip_net-federation
-
-  net-local:
-    driver: overlay
-    internal: true
+      name: mip-federation
 
 services:
-
   exareme:
     image: hbpmip/exareme
     environment:

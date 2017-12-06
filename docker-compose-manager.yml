@@ -21,10 +21,9 @@ version: '3'
 networks:
   net-federation:
     external:
-      name: mip_net-federation
+      name: mip-federation
 
 services:
-
   exareme-keystore:
     image: progrium/consul
     command:

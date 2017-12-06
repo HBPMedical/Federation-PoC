@@ -57,4 +57,4 @@ docker network create \
 	--subnet=10.20.30.0/24 \
 	--ip-range=10.20.30.0/24 \
 	--gateway=10.20.30.254 \
-	mip_net-federation
+	mip-federation
