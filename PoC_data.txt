@@ -1,0 +1,30 @@
+
+	EPFL: /data/ldsm -> ready for demo (maybe exchange both files?)
+		harmonized_clinical_data = adni_first300
+		mip_cde_features = edsd
+
+	EPFL: /var/Federation-PoC-1-data/datasets/ -> ready for PoC 1 with v1.0
+		harmonized_clinical_data.csv = adni_first300 + edsd
+		select dataset, count(*) FROM harmonized_clinical_data GROUP BY dataset;
+		 dataset | count 
+		---------+-------
+		 adni    |   300
+		 edsd    |   474
+
+
+	CHUV: /data/ldsm -> ready for demo (maybe exchange both files?)
+		mip_cde_features.csv = adni_next300
+		harmonized_clinical_data.csv = ppmi
+
+	CHUV: /var/Federation-PoC-1-data/datasets/ -> ready for PoC 1 with v1.0 
+		harmonized_clinical_data.csv = adni_next300 + ppmi
+		select dataset, count(*) FROM harmonized_clinical_data GROUP BY dataset;
+		 dataset | count 
+		---------+-------
+		 adni    |   300
+		 edsd    |   474
+
+Done at CHUV: 
+sudo mkdir /data/ldsm
+cp /var/Federation-PoC-data/datasets/adni-merge_next300.csv /data/ldsm/mip_cde_features.csv
+cp ppmi-data-db-setup/sql/ppmi.csv /data/ldsm/harmonized_clinical_data.csv

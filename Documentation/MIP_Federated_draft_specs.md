@@ -1,4 +1,4 @@
-Version 1.0 - 25.09.2017
+Version 2.0 - 06.12.2017
 
 # MIP Federation specifications
 
@@ -14,42 +14,47 @@ The Federation functionalities will be accessed through the CHUV's public Web Po
 
 ## Federation architecture overview
 
-This is on overview of the working principle of the Federation, based on the current knowledge and proof-of-concept results.
+The following schema shows on overview of the working principle of the Federation and of its infrastructure.
 
-CHUV will host three important Federation elements (alongside its MIP Local instance):
+![Image](Federation_schema.001.jpg)
 
-- Federation Web Portal (usual Docker container)
-- Federation Swarm manager
-- Exareme master (Docker container launched on the Swarm)
+The Federation Manager server will run Docker engine (as all other MIP nodes). It will create the Federation Swarm (standard Docker functionality), which will make it the Swarm manager.
 
-The CHUV Federation server will run Docker engine (as other MIP servers). It will create the Federation Swarm (standard Docker functionality), which will make it the Swarm manager.
+The Federation Manager server will host the following Federation elements (alongside its MIP Local or just LDSM instance):
 
-The other MIP nodes will mostly be the same as for MIP Local. The modifications will be:
-
-- The Federation server will have an internet access.
-- The Data Capture and Data Factory might be moved to another server for security reasons.
-- The Federation server (or more accurately its instance of Docker engine) will join the Swarm created by the Swarm manager.
-- The Swarm manager will remotely start an Exareme worker on the node.
+- Federation Web Portal (container run locally)
+- Federation Swarm Manager
+- Consul (container run on the swarm, service available on port 8500)
+- Portainer (optional UI for swarm management, container run on the swarm, service available on port 9000)
+- Exareme Master (container run on the swarm, service available on port 9090)
 
 
-## Regarding Docker Swarm
+The other MIP nodes will host an MIP Local instance, possibly deployed on several servers for improved security. The modifications will be:
 
-As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker Swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one Swarm, so all Federation servers Docker Engines will be part of the Federation Swarm (and no other Swarm, assuming the normal and recommanded setup where only one Docker engine runs on each server).
+- The server dedicated to the Federation (hosting the LDSM) will have an internet access.
+- The Data Capture and Data Factory might be moved to other servers to improve security.
+- The Federation server (or more accurately its Docker engine instance) will join the Federation Swarm.
+- The Federation Swarm Manager will remotely start an Exareme worker on the node.
 
-The Swarm is created by a Swarm manager; other Federation nodes will join as Swarm workers. The Federation Swarm will create a `mip-federation` network using the `--opt encrypted` option, thus ensuring that all communication on this network are encrypted.
-
-Then Docker containers can be launched in two ways: 
-
-- In the Swarm: This requires the container to be started **from the Swarm manager**, as containers started directly on the worker nodes can not join the swarm for security reasons. Because of this the Exareme containers (Master and worker instances) have to be started from the Swarm manager at CHUV. They will be connected through the `mip-federation` network.
-- Outside the Swarm: Docker container running outside the swarm can be started locally as usual on the worker nodes. All other Docker services composing MIP Local will be run locally, without access to the Swarm or the other MIP nodes.
+The software Exareme will expose federated analysis options to the Federation Web Portal. Exareme provides several algorithms that can be performed over the data distributed in multiple nodes. Exareme algorithms retrieve only aggregated results from each node to ensure privacy (no individual patient data will leave the servers of the MIP partners). Exareme then combines the partial results in a statistically significant manner befoae returning results to the Federation Web Portal.
 
 
-# MIP Federated deployment
+## Regarding Docker swarm
+
+As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one swarm, so all the Docker Engine instances running on the Federation servers will be part of the Federation Swarm. (The Federation servers cannot be part of another swarm, assuming the normal and recommanded setup where only one Docker engine runs on each server.)
+
+The swarm is created by the Swarm Manager; other Federation nodes will join as Swarm Workers. The Federation Swarm Manager will create a `mip-federation` network shared by the swarm nodes. All communications on this network will be encrypted using the option `--opt encrypted`.
+
+Docker containers can be run in two ways: 
+
+- On the swarm. To run on the swarm, the containers must be started **from the Swarm Manager**. Containers started directly on the worker nodes cannot join the swarm for security reasons. This means that all Exareme containers (Master and Worker instances) will be started from the Federation Swarm Manager.
+- Outside the swarm. Docker containers running outside the swarm can be started locally as usual on the worker nodes. All Docker services composing MIP Local will be run locally, without access to the swarm or the other MIP nodes.
 
 
-## Deployment for the Swarm manager node (CHUV)
+# MIP Federated requirements
 
-Requirements:
+
+## Federation manager server requirements
 
 - Static IP
 - Network configuration:
@@ -57,18 +62,15 @@ Requirements:
 	- UDP: ports 4789 and 7946 must be open and available
 	- IP protocol 50 (ESP) must be enabled
 
-MIP Local will mostly function as previously: the docker containers will be run locally, and can be deployed with the MIP Local deployment scripts (given that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks - see the "MIP Local deployment" document regarding current limitations).
+- If the configuration uses a whitelist of allowed IP addresses, the IP of all other Federation nodes must be authorised.
 
-On the Swarm manager server, the Swarm will be created using a deployment script. At creation time, two pieces of information must be retrieved: two tokens to add worker or manager nodes.
+The Federation manager server must run an instance of the LDSM as deployed in the MIP, exposing a valid federation view. The LDSM instance must be accessible locally through PostgresRAW-UI on port 31555.
 
-Note: The Swarm manager can be located on any server running docker; ideally it should be duplicated on three (or any odd-numbered number of) servers for redundancy. We assume here that the MIP Federation server of CHUV will be the Swarm manager (others can be added later using the "manager" token).
+- If the Federation Manager server is a hospital node, it will run a normal MIP Local instance.
+- If the Federation Manager server is not a hospital node, it only needs to run an instance of the LDSM containing the research dataset that must be exposed at the Federation level.
 
-Once the Swarm is created, the Exareme master will be run on the Swarm. The Web Portal must be configured to access Exareme on the correct port.
 
-
-## Deployment for other MIP nodes
-
-Requirements:
+## Federation nodes requirements
 
 - Static IP
 - Network configuration:
@@ -76,19 +78,102 @@ Requirements:
 	- UDP: ports 4789 and 7946 must be open and available
 	- IP protocol 50 (ESP) must be enabled
 
-MIP Local will mostly function as previously: the docker containers will be run locally, and can be deployed with the MIP-Local deployment scripts (given that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks - see the "MIP Local deployment" document regarding current limitations).
+The node must also host a deployed MIP Local, or at least an LDSM instance. The LDSM instance must be accessible locally through PostgresRAW-UI on port 31555.
 
-The only supplementary deployment step to perform on the Federation server is to join the Swarm, using the token retrieved by the Swarm manager at the creation of the Swarm.
 
-Modifications required at the level of the MIP local deployment scripts:
+# MIP Federated deployment
 
-- The LDSM must be available on one of the machine's ports.
+## Initial setup
+
+This document does not cover the deployment of MIP Local at the Federation nodes. It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (12.2017).
+
+In summary, the initial setup expected is the following:
+
+- On the Federation Manager server, Docker engine must be installed and the LDSM deployed, either alone or as part of the MIP Local (PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively).
+
+- On the other Federation nodes, MIP Local must be deployed including the LDSM, again with PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively.
+
+- The network access is configured at each node according to the requirements.
+
+![Image](Federation_schema.002.jpg)
+
+## Deployment of the Federation Manager node
+
+Based on the last version of the Federation infrastructure schema provided, the Federation Manager node will be a server independant from any particular hospital. Alternatively, any hospital node hosting an instance of MIP Local could be the Federation manager.
+
+In both cases, the Federation Manager server must host a deployed LDSM instance exposing the research data as part of its Federation view.
+
+The Federation Manager server creates the Federation Swarm; it thus becomes the _Swarm Manager_. It also creates a network on the swarm dedicated to the Federation traffic named `mip-federation`. 
+At creation time, or any time later, two tokens can be retrieved: they allow to add worker or manager nodes to the swarm.
+
+Note: The Swarm Manager can be located on any server running docker; ideally it should be duplicated on three (or any odd-numbered number of) servers for redundancy. We currently assume that the MIP Federation Server of CHUV will be the Swarm Manager (others can be added later using the "manager" token).
+
+Once the Swarm is created, the Exareme master will be run on the swarm. The Federation Web Portal must be configured to access Exareme on the correct port.
+
+
+### Deployment steps
+
+- Create the swarm by running the createMaster.sh script.
+  
+   ```
+   git clone https://github.com/HBPMedical/Federation-PoC.git
+   cd Federation-PoC
+   ./createMaster.sh
+   ```
+
+![Image](Federation_schema.003.jpg)
+
+
+
+## Deployment of other MIP nodes
+
+MIP Local will mostly function as previously: the docker containers will be run locally, and can be deployed with the MIP Local deployment scripts (assuming that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks).
+
+The only supplementary deployment step to perform at the node is to join the swarm, using the token provided by the swarm manager.
+
+### Deployment steps
+
+- If needed, retrieve the token on the Federation manager server with the following command:
+
+	```
+	$ sudo docker swarm join-token worker
+	```
+
+- On the node, use the command retrived at the previous step to join the Federation swarm:
+
+	```
+	$ docker swarm join --token <Swarm Token> <Master Node URL>
+	```
+
+
+![Image](Federation_schema.004.jpg)
+
 
 ## Deployment of Exareme and creation of the Federation
 
-Once the worker nodes have joined the Swarm, the Swarm manager will tag each of them with a representative name (e.g. hospital name) and launch an Exareme worker on each of them. The Exareme worker will access the local LDSM to perform the queries requested by the Exarme master.
+Once the worker nodes have joined the swarm, the swarm manager must tag each of them with a representative name (e.g. hospital name) and launch an Exareme worker on each of them. The Exareme worker will access the local LDSM to perform the queries requested by the Exarme master.
+
+
+- On the Federation manager server, tag the new node(s) with an informative label:
+
+   ```sh
+   $ sudo docker node update --label-add name=<Alias> <node hostname>
+   ```
+   * `<node hostname>` can be found with `docker node ls`
+   * `<Alias>` will be used when bringing up the services and should be a short descriptive name.
+   
+- Restart Exareme taking into account the new node:
+
+   ```sh
+   $ sudo ./start.sh <Alias>
+   ```
+
+![Image](Federation_schema.005.jpg)
 
 
 
+## Deployment and configuration of the Federation Web Portal
 
+To be defined.
 
+![Image](Federation_schema.006.jpg)
