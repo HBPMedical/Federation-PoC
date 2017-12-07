@@ -38,24 +38,24 @@ services:
       placement:
         constraints:
           - node.role == manager       # Ensures we only start on manager nodes
-          - node.labels.name == ${federation_node}
+          - node.labels.name == ${FEDERATION_NODE}
     networks:
       - "net-federation" # Connect the docker container to the global network
 
   exareme-manager:
     image: hbpmip/exareme
     environment:
-      - CONSULURL=${consul_url}
+      - CONSULURL=${EXAREME_KEYSTORE}
       - MASTER_FLAG=master
-      - EXA_WORKERS_WAIT=${exareme_workers_wait} # Wait for N workers
-      - RAWUSERNAME=federation
-      - RAWPASSWORD=federation
-      - RAWHOST=${rawhost}
-      - RAWPORT=31555
-      - RAWENDPOINT=query
-      - RAWRESULTS=all
-      - RAWDATAKEY=output #query used with output, query-start with data
-      - MODE=global
+      - EXA_WORKERS_WAIT=${EXAREME_WORKERS_WAIT} # Wait for N workers
+      - RAWUSERNAME=${LDSM_USERNAME}
+      - RAWPASSWORD=${LDSM_PASSWORD}
+      - RAWHOST=${LDSM_HOST}
+      - RAWPORT=${LDSM_PORT}
+      - RAWENDPOINT=${EXAREME_LDSM_ENDPOINT}
+      - RAWRESULTS=${EXAREME_LDSM_RESULTS}
+      - RAWDATAKEY=${EXAREME_LDSM_DATAKEY}
+      - MODE=${EXAREME_MODE}
     depends_on:
       - exareme-keystore
     deploy:
@@ -66,8 +66,8 @@ services:
         window: 120s
       placement:
         constraints:
-          - node.role == manager       # Ensures we only start on manager nodes
-          - node.labels.name == ${federation_node}
+          - node.role == manager # Ensures we only start on manager nodes
+          - node.labels.name == ${FEDERATION_NODE}
     ports:
       - "9090:9090"      # So that we can access the Exareme REST API / interface
     networks:

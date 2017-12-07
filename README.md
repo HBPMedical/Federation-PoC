@@ -94,3 +94,22 @@ The following are required on all nodes. This is installed by default as part of
    ```
 
    * `<Alias>` will be used when bringing up the services and should be a short descriptive name.
+
+## Settings
+
+All the settings have default values, but you can change them by either exporting in your shell the setting with its value, or creating `settings.local.sh` in the same folder as `settings.sh`:
+
+```sh
+: ${VARIABLE:="Your value"}
+```
+
+**Note**: To find the exhaustive list of parameters available please take a look at `settings.default.sh`.
+
+**Note**: If the setting is specific to a node of the federation, you can do this in `settings.local.<Alias>.sh` where `<Alias>` is the short descriptive name given to a node.
+
+Settings are taken in the following order of precedence:
+
+  1. Shell Environment, or on the command line
+  2. Node-specific settings `settings.local.<Alias>.sh`
+  3. Federation-specific `settings.local.sh`
+  4. Default settings `settings.default.sh`

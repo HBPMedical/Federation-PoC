@@ -19,16 +19,13 @@
 
 set -e
 
-: ${CONSULPORT:=8500}
-: ${PORTAINERPORT:=9000}
-: ${MASTERPORT:=2377}
-: ${MASTERIP:=$(wget http://ipinfo.io/ip -qO -)}
-: ${MASTERNAME:=$(hostname)}
+# Import settings
+. ./settings.sh
 
 # Master node/Manager
 (
 	# Initialize swarm
-	docker swarm init --advertise-addr=${MASTERIP}
+	docker swarm init --advertise-addr=${MASTER_IP}
 )
 
 # Portainer, a webUI for Docker Swarm
@@ -42,7 +39,7 @@ then
 
 	docker service create \
 		--name portainer \
-		--publish ${PORTAINERPORT}:9000 \
+		--publish ${PORTAINER_PORT}:9000 \
 		--constraint 'node.role == manager' \
 		--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
 		--mount type=bind,src=${portainer_data},dst=/data \

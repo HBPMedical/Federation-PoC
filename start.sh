@@ -17,16 +17,7 @@
 # DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 # USE OF THIS SOFTWARE.
 
-# Node-specific config:
-: ${federation_node:="UNKNOWN"} # Invalid default value, this needs to be setup.
-
-# Whole Swarm config
-: ${consul_url:="exareme-keystore:8500"}
-: ${POSTGRES_USER:=mip}
-: ${POSTGRES_PASSWORD:=s3cret}
-: ${POSTGRES_PORT:=5432}
-: ${POSTGRES_DB:=ldsm}
-export consul_url POSTGRES_USER POSTGRES_PASSWORD POSTGRES_PORT POSTGRES_DB
+. ./settings.sh
 
 usage() {
 cat <<EOT
@@ -34,13 +25,10 @@ usage: $0 [-h|--help] nodename
 	-h, --help: show this message and exit
 	nodename: the node on which to deploy the stack
 
-The following environment variables can be set to override defaults:
- - consul_url: URL to contact consul server for Exareme
- - exareme_workers_wait: Number of active workers in the federation
- - POSTGRES_USER
- - POSTGRES_PASSWORD
- - POSTGRES_PORT
- - POSTGRES_DB
+You can use environment variables, or add them into settings.local.sh
+to change the default values.
+
+To see the full list, please refer to settings.default.sh
 
 Errors: This script will exit with the following error codes:
  1	No arguments provided
@@ -60,30 +48,39 @@ case $1 in
 	;;
 
 	*)
-		federation_node="$1"
+		FEDERATION_NODE="$1"
 	;;
 esac
 
-if [ ${federation_node} == "UNKNOWN" ]; then
+if [ -z "${FEDERATION_NODE}" ]; then
 	echo "Invalid federation node name"
 	usage
 	exit 3
 fi
 
-exareme_workers_wait="1"
 for h in $(docker node ls --format '{{ .Hostname }}')
 do
-	l=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-	if [ "x$l" == "x$federation_node" ];
+	label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+	if [ "x${label}" == "x${FEDERATION_NODE}" ];
 	then
-		rawhost=$(docker node inspect --format '{{ .Status.Addr }}' $h)
-		role=$(docker node inspect --format '{{ .Spec.Role }}' $h)
+		test -z "${LDSM_HOST}" && \
+			LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+		
+		test -z "${EXAREME_ROLE}" && \
+			EXAREME_ROLE=$(docker node inspect --format '{{ .Spec.Role }}' ${h})
 		break;
 	fi
 done
 
-export federation_node rawhost exareme_workers_wait
 shift # drop the node name from the argument list
 
+# Export the settings to the docker-compose files
+export FEDERATION_NODE
+
+export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT
+
+export EXAREME_ROLE EXAREME_KEYSTORE EXAREME_MODE EXAREME_WORKERS_WAIT
+export EXAREME_LDSM_ENDPOINT EXAREME_LDSM_RESULTS EXAREME_LDSM_DATAKEY
+
 # Finally deploy the stack
-docker stack up -c docker-compose-${role}.yml ${federation_node}
+docker stack up -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
