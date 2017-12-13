@@ -19,8 +19,14 @@
 
 . ./settings.sh
 
+federation_nodes=""
+for h in $(docker node ls --format '{{ .Hostname }}')
+do
+	federation_nodes="$federation_nodes $(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})"
+done
+
 usage() {
-cat <<EOT
+	cat <<EOT
 usage: $0 [-h|--help] nodename
 	-h, --help: show this message and exit
 	nodename: the node on which to deploy the stack
@@ -29,6 +35,9 @@ You can use environment variables, or add them into settings.local.sh
 to change the default values.
 
 To see the full list, please refer to settings.default.sh
+
+Please find below the list of known Federation nodes:
+$federation_nodes
 
 Errors: This script will exit with the following error codes:
  1	No arguments provided
