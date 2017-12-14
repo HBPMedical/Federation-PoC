@@ -20,15 +20,18 @@
 . ./settings.sh
 
 federation_nodes=""
+federation_hosts=""
 for h in $(docker node ls --format '{{ .Hostname }}')
 do
-	federation_nodes="$federation_nodes $(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})"
+	federation_nodes="${federation_nodes} $(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})"
+	federation_hosts="${federation_hosts} ${h}"
 done
 
 usage() {
 	cat <<EOT
-usage: $0 [-h|--help] nodename
+usage: $0 [-h|--help] (all|nodename)
 	-h, --help: show this message and exit
+	all: Start the federation on all the node currently known
 	nodename: the node on which to deploy the stack
 
 You can use environment variables, or add them into settings.local.sh
@@ -37,12 +40,83 @@ to change the default values.
 To see the full list, please refer to settings.default.sh
 
 Please find below the list of known Federation nodes:
-$federation_nodes
+${federation_nodes}
 
 Errors: This script will exit with the following error codes:
  1	No arguments provided
  2	Federation node is incorrect
 EOT
+}
+
+start_node() {
+	(
+		FEDERATION_NODE=$1
+		LDSM_HOST=$2
+		EXAREME_ROLE=$3
+
+		# Export the settings to the docker-compose files
+		export FEDERATION_NODE
+
+		export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT
+
+		export EXAREME_ROLE EXAREME_KEYSTORE EXAREME_MODE EXAREME_WORKERS_WAIT
+		export EXAREME_LDSM_ENDPOINT EXAREME_LDSM_RESULTS EXAREME_LDSM_DATAKEY
+
+		# Finally deploy the stack
+		docker stack up -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
+	)
+}
+
+start_all_node() {
+	# Make sure we start from empty lists
+	managers=""
+	workers=""
+
+	# Sort the nodes based on their roles
+	for h in ${federation_hosts}
+	do
+		if [ "manager" == "$(docker node inspect --format '{{ .Spec.Role }}' ${h})" ];
+		then 
+			managers="${managers} ${h}"
+		else
+			workers="${workers} ${h}"
+		fi
+	done
+
+	# Start all the manager nodes
+	for h in ${managers}
+	do
+		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+		EXAREME_WORKERS_WAIT=$(echo "$workers" | wc -w)
+		start_node ${label} ${dbhost} manager
+	done
+
+	# Then start all the worker nodes
+	for h in ${workers}
+	do
+		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+		start_node ${label} ${dbhost} worker
+	done
+}
+
+start_one_node() {
+	for h in ${federation_hosts}
+	do
+		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+		if [ "x${label}" == "x${FEDERATION_NODE}" ];
+		then
+			test -z "${LDSM_HOST}" && \
+				LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+
+			test -z "${EXAREME_ROLE}" && \
+				EXAREME_ROLE=$(docker node inspect --format '{{ .Spec.Role }}' ${h})
+
+			start_node ${label} ${LDSM_HOST} ${EXAREME_ROLE}
+			break
+		fi
+	done
 }
 
 if [ $# -lt 1 ]; then
@@ -67,29 +141,14 @@ if [ -z "${FEDERATION_NODE}" ]; then
 	exit 3
 fi
 
-for h in $(docker node ls --format '{{ .Hostname }}')
-do
-	label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-	if [ "x${label}" == "x${FEDERATION_NODE}" ];
-	then
-		test -z "${LDSM_HOST}" && \
-			LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-		
-		test -z "${EXAREME_ROLE}" && \
-			EXAREME_ROLE=$(docker node inspect --format '{{ .Spec.Role }}' ${h})
-		break;
-	fi
-done
+case ${FEDERATION_NODE} in
+	all)
+		start_all_node
+	;;
 
-shift # drop the node name from the argument list
+	*)
+		start_one_node ${FEDERATION_NODE}
+	;;
+esac
 
-# Export the settings to the docker-compose files
-export FEDERATION_NODE
-
-export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT
-
-export EXAREME_ROLE EXAREME_KEYSTORE EXAREME_MODE EXAREME_WORKERS_WAIT
-export EXAREME_LDSM_ENDPOINT EXAREME_LDSM_RESULTS EXAREME_LDSM_DATAKEY
-
-# Finally deploy the stack
-docker stack up -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
+exit 0

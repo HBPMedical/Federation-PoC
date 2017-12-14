@@ -19,8 +19,12 @@ then
 	. ./settings.default.sh;
 fi
 
-echo "Current settings:"
-for v in $(grep '^:' settings.default.sh|cut -c 5- |cut -d: -f1)
-do
-	eval "echo $v=\$$v"
-done
+if ${SHOW_SETTINGS};
+then
+	echo "Current settings:"
+	for v in $(grep '^:' settings.default.sh|cut -c 5- |cut -d: -f1)
+	do
+		eval "echo $v=\$$v"
+	done
+	echo
+fi

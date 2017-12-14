@@ -1,3 +1,5 @@
+: ${SHOW_SETTINGS:=false}
+
 # Swarm Manager settings
 : ${MASTER_IP:=$(wget http://ipinfo.io/ip -qO -)}
 

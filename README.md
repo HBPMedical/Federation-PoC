@@ -94,6 +94,7 @@ The following are required on all nodes. This is installed by default as part of
    ```
 
    * `<Alias>` will be used when bringing up the services and should be a short descriptive name.
+   * if you set `SHOW_SETTINGS=true` a printout of all the settings which will be used will be printed before doing anything.
 
 ## Settings
 
