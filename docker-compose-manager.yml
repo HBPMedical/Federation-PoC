@@ -43,7 +43,7 @@ services:
       - "net-federation" # Connect the docker container to the global network
 
   exareme-manager:
-    image: hbpmip/exareme
+    image: hbpmip/exareme_dataset:v0.2
     environment:
       - CONSULURL=${EXAREME_KEYSTORE}
       - MASTER_FLAG=master
