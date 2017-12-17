@@ -38,7 +38,7 @@ networks:
 
 services:
   exareme-manager:
-    image:  hbpmip/exareme
+    image:  "hbpmip/exareme"
     environment:
       - CONSULURL=${consul_url}
       - MASTER_FLAG=master
@@ -51,6 +51,7 @@ services:
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
       - MODE=global
+      - NODE_NAME=${federation_node}
     depends_on:
       - raw-engine
       - exareme-keystore

@@ -39,7 +39,7 @@ networks:
 services:
 
   exareme:
-    image: hbpmip/exareme
+    image: "hbpmip/exareme"
     environment:
       - CONSULURL=${consul_url}
       - RAWUSERNAME=federation
@@ -50,6 +50,7 @@ services:
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
       - MODE=global
+      - NODE_NAME=${federation_node}
     depends_on:
       - raw-engine
     deploy:
