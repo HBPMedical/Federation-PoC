@@ -31,8 +31,8 @@ usage() {
 	cat <<EOT
 usage: $0 [-h|--help] (all|nodename [nodename ...])
 	-h, --help: show this message and exit
-	all: Start the federation on all the nodes currently known
-	nodename: one or more nodes on which to deploy the stack
+	all: Stops the federation on all the nodes currently known
+	nodename: one or more nodes on which to stop the stack
 
 You can use environment variables, or add them into settings.local.sh
 to change the default values.
@@ -48,26 +48,19 @@ Errors: This script will exit with the following error codes:
 EOT
 }
 
-start_node() {
+stop_node() {
 	(
 		FEDERATION_NODE=$1
-		LDSM_HOST=$2
-		EXAREME_ROLE=$3
 
 		# Export the settings to the docker-compose files
 		export FEDERATION_NODE
 
-		export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT
-
-		export EXAREME_ROLE EXAREME_KEYSTORE EXAREME_MODE EXAREME_WORKERS_WAIT
-		export EXAREME_LDSM_ENDPOINT EXAREME_LDSM_RESULTS EXAREME_LDSM_DATAKEY
-
-		# Finally deploy the stack
-		docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
+		# Finally stop the stack
+		docker stack rm ${FEDERATION_NODE}
 	)
 }
 
-start_nodes() {
+stop_nodes() {
 	# Make sure we start from empty lists
 	nodes="$*"
 	hosts=""
@@ -98,41 +91,32 @@ start_nodes() {
 		fi
 	done
 
-	# Start all the manager nodes
-	for h in ${managers}
-	do
-		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-		EXAREME_WORKERS_WAIT=$(echo "$workers" | wc -w)
-		start_node ${label} ${dbhost} manager
-	done
-
-	# Then start all the worker nodes
+	# Stop all the worker nodes
 	for h in ${workers}
 	do
 		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-		start_node ${label} ${dbhost} worker
+		stop_node ${label}
+	done
+
+	# Then stop all the manager nodes
+	for h in ${managers}
+	do
+		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
+		stop_node ${label}
 	done
 }
 
-start_all_nodes() {
-	start_nodes ${federation_nodes}
+stop_all_nodes() {
+	stop_nodes ${federation_nodes}
 }
 
-start_one_node() {
+stop_one_node() {
 	for h in ${federation_hosts}
 	do
 		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
 		if [ "x${label}" == "x${FEDERATION_NODE}" ];
 		then
-			test -z "${LDSM_HOST}" && \
-				LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-
-			test -z "${EXAREME_ROLE}" && \
-				EXAREME_ROLE=$(docker node inspect --format '{{ .Spec.Role }}' ${h})
-
-			start_node ${label} ${LDSM_HOST} ${EXAREME_ROLE}
+			stop_node ${label}
 			break
 		fi
 	done
@@ -165,15 +149,15 @@ then
 
 	case ${FEDERATION_NODE} in
 		all)
-			start_all_nodes
+			stop_all_nodes
 		;;
 
 		*)
-			start_one_node ${FEDERATION_NODE}
+			stop_one_node ${FEDERATION_NODE}
 		;;
 	esac
 else
-	start_nodes $*
+	stop_nodes $*
 fi
 
 exit 0
