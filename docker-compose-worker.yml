@@ -25,9 +25,10 @@ networks:
 
 services:
   exareme:
-    image: hbpmip/exareme_dataset:v0.2
+    image: ${EXAREME_IMAGE}:${EXAREME_VERSION}
     environment:
       - CONSULURL=${EXAREME_KEYSTORE}
+      - NODE_NAME=${FEDERATION_NODE}
       - RAWUSERNAME=${LDSM_USERNAME}
       - RAWPASSWORD=${LDSM_PASSWORD}
       - RAWHOST=${LDSM_HOST}

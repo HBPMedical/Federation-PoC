@@ -25,6 +25,7 @@ networks:
 
 services:
   exareme-keystore:
+    image: ${CONSUL_IMAGE}:${CONSUL_VERSION}
     image: progrium/consul
     command:
       - -server
@@ -43,10 +44,11 @@ services:
       - "net-federation" # Connect the docker container to the global network
 
   exareme-manager:
-    image: hbpmip/exareme_dataset:v0.2
+    image: ${EXAREME_IMAGE}:${EXAREME_VERSION}
     environment:
       - CONSULURL=${EXAREME_KEYSTORE}
       - MASTER_FLAG=master
+      - NODE_NAME=${FEDERATION_NODE}
       - EXA_WORKERS_WAIT=${EXAREME_WORKERS_WAIT} # Wait for N workers
       - RAWUSERNAME=${LDSM_USERNAME}
       - RAWPASSWORD=${LDSM_PASSWORD}

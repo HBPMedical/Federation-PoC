@@ -7,6 +7,10 @@
 : ${PORTAINER_PORT:="9000"}
 
 # Federation Services
+: ${CONSUL_IMAGE:="progrium/consul"}
+: ${CONSUL_VERSION:="latest"}
+: ${EXAREME_IMAGE:="hbpmip/exareme_dataset"}
+: ${EXAREME_VERSION:="demo2"}
 : ${EXAREME_ROLE:=""} # The default value is set to the federation node role (worker or manager)
 : ${EXAREME_KEYSTORE_PORT:="8500"}
 : ${EXAREME_KEYSTORE:="exareme-keystore:${EXAREME_KEYSTORE_PORT}"}
