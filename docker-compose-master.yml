@@ -43,10 +43,11 @@ services:
       - CONSULURL=${consul_url}
       - MASTER_FLAG=master
       - EXA_WORKERS_WAIT=${exareme_workers_wait} # Wait for N workers
-      - RAWUSERNAME=federation
-      - RAWPASSWORD=federation
-      - RAWHOST=raw-ui
-      - RAWPORT=5555
+      - RAWUSERNAME=${POSTGRES_USER}
+      - RAWPASSWORD=${POSTGRES_PASSWORD}
+      - RAWHOST=raw-engine
+      - RAWPORT=${POSTGRES_PORT}
+      - RAWDB=${POSTGRES_DB}
       - RAWENDPOINT=query
       - RAWRESULTS=all
       - RAWDATAKEY=output #query used with output, query-start with data
@@ -94,7 +95,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
 
   raw-ui:
-    image: "hbpmip/postgresraw-ui:v1.0"
+    image: "hbpmip/postgresraw-ui:v1.2"
     networks:
       - "net-local"      # Connect the docker container to the local network
     depends_on:
