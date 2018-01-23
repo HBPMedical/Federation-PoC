@@ -38,7 +38,7 @@ networks:
 
 services:
   exareme-manager:
-    image:  "hbpmip/exareme"
+    image:  "hbpmip/exareme_dataset:postgresraw"
     environment:
       - CONSULURL=${consul_url}
       - MASTER_FLAG=master
