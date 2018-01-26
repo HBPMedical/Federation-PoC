@@ -24,7 +24,7 @@
 : ${LDSM_USERNAME:="federation"}
 : ${LDSM_PASSWORD:="federation"}
 : ${LDSM_HOST:=""} # The default value is set to the federation node
-: ${LDSM_PORT:="31543"}
+: ${LDSM_PORT:="31432"}
 : ${LDSM_DB:="ldsm"}
 
 : ${FEDERATION_NODE:=""} # Invalid default value, this a required argument of start.sh
